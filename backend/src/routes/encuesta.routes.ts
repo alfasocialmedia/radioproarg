@@ -14,15 +14,13 @@ import { injectTenant } from '../middlewares/tenant.middleware';
 
 const router = Router();
 
-// --- RUTAS PÚBLICAS (PORTAL) ---
 router.get('/activa', injectTenant, obtenerEncuestaActiva);
 router.post('/votar/:opcionId', injectTenant, votar);
 router.get('/noticia/:noticiaId', injectTenant, obtenerEncuestaPorNoticia);
 
-// --- RUTAS PROTEGIDAS (ADMIN) ---
 router.use(authenticateToken);
 router.use(injectTenant);
-router.use(verifyRadioAccess); // BLOQUEO CRÍTICO: El usuario debe pertenecer a este tenant
+router.use(verifyRadioAccess); 
 
 router.get('/todas', listarEncuestas);
 router.post('/', crearEncuesta);
