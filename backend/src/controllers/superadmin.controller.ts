@@ -39,8 +39,8 @@ export const getDashboardStats = async (req: Request, res: Response) => {
             totalUsuarios,
             ticketsAbiertos,
             mrrTotal: Math.round(mrrTotal),
-            totalStorageAssigned,
-            totalStorageLimit: 100,
+            totalStorageAssigned, 
+            totalStorageLimit: 100, 
             ultimasRadios: radios.slice(0, 6)
         });
     } catch (error) {
