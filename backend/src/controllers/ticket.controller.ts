@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
-import { enviarEmailTicketRespuesta } from '../services/email.service';
+import { enviarEmailTicketRespuesta, enviarNotificacionNuevoTicket } from '../services/email.service';
 
 // Crear ticket
 export const crearTicket = async (req: Request, res: Response) => {
@@ -10,9 +10,17 @@ export const crearTicket = async (req: Request, res: Response) => {
 
         if (!asunto || !mensaje) return res.status(400).json({ error: 'Asunto y mensaje son requeridos.' });
 
-        // Buscar el usuario admin de la radio
-        const usuario = await prisma.usuario.findFirst({ where: { radioId } });
-        if (!usuario) return res.status(400).json({ error: 'No se encontró el usuario de esta radio.' });
+        // Buscar el usuario admin de la radio y los datos de la radio
+        const radio = await prisma.radio.findUnique({
+            where: { id: radioId },
+            include: { usuarios: { where: { rol: 'ADMIN_RADIO' }, take: 1 } }
+        });
+
+        if (!radio || radio.usuarios.length === 0) {
+            return res.status(400).json({ error: 'No se encontró la configuración de la radio.' });
+        }
+
+        const usuario = radio.usuarios[0];
 
         const ticket = await prisma.ticket.create({
             data: {
@@ -26,8 +34,14 @@ export const crearTicket = async (req: Request, res: Response) => {
             include: { mensajes: true }
         });
 
+        // Notificar a los administradores de sistema
+        await enviarNotificacionNuevoTicket(radio.nombre, asunto, mensaje, ticket.id);
+
         res.status(201).json(ticket);
-    } catch (e) { res.status(500).json({ error: 'Error creando el ticket.' }); }
+    } catch (e: any) {
+        console.error('[Ticket] Error en creación:', e.message);
+        res.status(500).json({ error: 'Error creando el ticket.' });
+    }
 };
 
 // Listar tickets de una radio

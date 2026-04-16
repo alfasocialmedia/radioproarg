@@ -18,6 +18,7 @@ export default function AdminClientLayout({ children }: { children: React.ReactN
     const [PLAN, setPlan] = useState<string>('audio');
     const [slug, setSlug] = useState<string>('demo');
     const [ROL, setRol] = useState<string>('ADMIN_RADIO');
+    const [radioIdActual, setRadioIdActual] = useState<string>('');
 
     useEffect(() => {
         const storedPlan = localStorage.getItem('usuario_plan');
@@ -39,7 +40,10 @@ export default function AdminClientLayout({ children }: { children: React.ReactN
                 .then(res => {
                     const { id, subdominio } = res.data;
                     if (subdominio) setSlug(subdominio);
-                    if (id) localStorage.setItem('radioId', id);
+                    if (id) {
+                        localStorage.setItem('radioId', id);
+                        setRadioIdActual(id);
+                    }
                 })
                 .catch(err => {
                     // Evitar el error gigante de Axios en la pantalla usando err.message
@@ -146,7 +150,7 @@ export default function AdminClientLayout({ children }: { children: React.ReactN
                                 </div>
                             ))}
                             <Link
-                                href="/checkout?plan=portal"
+                                href={`/checkout?plan=portal&radioId=${radioIdActual}`}
                                 className="mt-5 mx-2 group relative overflow-hidden flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/30 hover:to-blue-600/30 border border-purple-500/30 text-white text-xs font-black transition-all shadow-lg active:scale-95"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />

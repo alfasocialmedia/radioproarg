@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const SONICPANEL_URL = process.env.SONICPANEL_URL || '';
+// Asegurarse de que la URL tenga el protocolo correcto
+const baseSonicUrl = process.env.SONICPANEL_URL || '';
+const SONICPANEL_URL = baseSonicUrl.startsWith('http') ? baseSonicUrl : `https://${baseSonicUrl}`;
 const SONICPANEL_KEY = process.env.SONICPANEL_KEY || '';
 
 /**
@@ -13,7 +15,7 @@ const sonicClient = axios.create({
         'Authorization': `Bearer ${SONICPANEL_KEY}`,
         'Content-Type': 'application/json',
     },
-    timeout: 15000,
+    timeout: 20000, // Aumentado a 20s para operaciones de creación pesadas
 });
 
 export interface SonicRadioParams {
@@ -21,7 +23,7 @@ export interface SonicRadioParams {
     bitrate: number;
     maxOyentes: number;
     email: string;
-    paquete?: string; // el paquete de SonicPanel correspondiente al plan
+    paquete?: string;
 }
 
 export interface SonicRadioResult {
@@ -37,27 +39,31 @@ export interface SonicRadioResult {
 
 /**
  * Crea una nueva radio en SonicPanel
- * Retorna las credenciales de streaming y FTP
  */
 export const crearRadioEnSonicPanel = async (params: SonicRadioParams): Promise<SonicRadioResult> => {
-    if (!SONICPANEL_URL || !SONICPANEL_KEY) {
-        console.warn('[SonicPanel] Variables de entorno no configuradas. Generando credenciales placeholder.');
-        // En modo demo/desarrollo, devuelve credenciales placeholder
-        const username = `radio_${Date.now()}`;
+    // Validaciones básicas antes de llamar a la API
+    if (params.bitrate > 320) params.bitrate = 320;
+    if (params.bitrate < 32) params.bitrate = 32;
+
+    if (!SONICPANEL_URL || !SONICPANEL_KEY || SONICPANEL_KEY === '') {
+        console.warn('[SonicPanel] API no configurada. Generando credenciales de prueba.');
+        const username = `radio_${Date.now().toString().slice(-6)}`;
+        const pass = generarPassword();
         return {
-            radioId: `sp_${Date.now()}`,
+            radioId: `mock_${Date.now()}`,
             streamUser: username,
-            streamPassword: generarPassword(),
+            streamPassword: pass,
             streamMount: `/${username}`,
-            streamPort: 8000,
-            ftpUser: `ftp_${username}`,
-            ftpPassword: generarPassword(),
-            streamUrl: `http://${SONICPANEL_URL || 'stream.miservidor.com'}:8000/${username}`,
+            streamPort: 8000 + Math.floor(Math.random() * 1000),
+            ftpUser: username,
+            ftpPassword: pass,
+            streamUrl: `http://stream.onradio.com.ar:8000${username}`,
         };
     }
 
     try {
-        // Endpoint real de SonicPanel para crear una nueva cuenta de radio
+        console.log(`[SonicPanel] Intentando crear radio: ${params.nombre} (${params.email})`);
+        
         const response = await sonicClient.post('/api/v2/radio/create', {
             name: params.nombre,
             bitrate: params.bitrate,
@@ -67,61 +73,74 @@ export const crearRadioEnSonicPanel = async (params: SonicRadioParams): Promise<
         });
 
         const data = response.data;
+        
+        if (!data || !data.id) {
+            throw new Error('Respuesta inválida de la API de SonicPanel');
+        }
+
+        console.log(`[SonicPanel] Radio creada con ID: ${data.id}`);
 
         return {
-            radioId: data.id,
+            radioId: String(data.id),
             streamUser: data.stream_username,
             streamPassword: data.stream_password,
-            streamMount: data.mount,
-            streamPort: data.port,
+            streamMount: data.mount || `/${data.stream_username}`,
+            streamPort: Number(data.port),
             ftpUser: data.ftp_username,
             ftpPassword: data.ftp_password,
             streamUrl: data.stream_url,
         };
     } catch (error: any) {
-        console.error('[SonicPanel] Error creando radio:', error.response?.data || error.message);
-        throw new Error('Error al crear la radio en SonicPanel. Contacte al administrador.');
+        const detail = error.response?.data || error.message;
+        console.error('[SonicPanel] Error crítico en creación:', detail);
+        
+        // Mapeo de errores comunes de SonicPanel para que el usuario reciba algo útil
+        if (typeof detail === 'object' && detail.error) {
+            throw new Error(`SonicPanel: ${detail.error}`);
+        }
+        
+        throw new Error('No se pudo establecer conexión con el servidor de streaming. Por favor, reintente en unos minutos.');
     }
 };
 
 /**
- * Suspende una radio en SonicPanel
+ * Suspende o reactiva una radio
  */
-export const suspenderRadioEnSonicPanel = async (sonicpanelId: string): Promise<void> => {
-    if (!SONICPANEL_URL || !SONICPANEL_KEY) return;
+export const cambiarEstadoRadioEnSonicPanel = async (sonicpanelId: string, suspender: boolean): Promise<boolean> => {
+    if (!SONICPANEL_URL || !SONICPANEL_KEY) return false;
+    
+    const action = suspender ? 'suspend' : 'unsuspend';
     try {
-        await sonicClient.post(`/api/v2/radio/${sonicpanelId}/suspend`);
+        await sonicClient.post(`/api/v2/radio/${sonicpanelId}/${action}`);
+        console.log(`[SonicPanel] Acción "${action}" exitosa para ID: ${sonicpanelId}`);
+        return true;
     } catch (error: any) {
-        console.error('[SonicPanel] Error suspendiendo radio:', error.message);
+        console.error(`[SonicPanel] Error en "${action}":`, error.message);
+        return false;
     }
 };
 
 /**
- * Reactiva una radio suspendida en SonicPanel
+ * Elimina una radio
  */
-export const reactivarRadioEnSonicPanel = async (sonicpanelId: string): Promise<void> => {
-    if (!SONICPANEL_URL || !SONICPANEL_KEY) return;
-    try {
-        await sonicClient.post(`/api/v2/radio/${sonicpanelId}/unsuspend`);
-    } catch (error: any) {
-        console.error('[SonicPanel] Error reactivando radio:', error.message);
-    }
-};
-
-/**
- * Elimina una radio de SonicPanel
- */
-export const eliminarRadioEnSonicPanel = async (sonicpanelId: string): Promise<void> => {
-    if (!SONICPANEL_URL || !SONICPANEL_KEY) return;
+export const eliminarRadioEnSonicPanel = async (sonicpanelId: string): Promise<boolean> => {
+    if (!SONICPANEL_URL || !SONICPANEL_KEY) return false;
     try {
         await sonicClient.delete(`/api/v2/radio/${sonicpanelId}`);
+        console.log(`[SonicPanel] Radio eliminada exitosamente: ${sonicpanelId}`);
+        return true;
     } catch (error: any) {
-        console.error('[SonicPanel] Error eliminando radio:', error.message);
+        console.error('[SonicPanel] Error en eliminación:', error.message);
+        return false;
     }
 };
 
 // Genera contraseña aleatoria segura
 function generarPassword(longitud = 12): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz23456789!@#$%';
-    return Array.from({ length: longitud }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz23456789';
+    let pass = '';
+    for (let i = 0; i < longitud; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
 }

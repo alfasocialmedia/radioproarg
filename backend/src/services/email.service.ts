@@ -114,6 +114,9 @@ export const enviarEmailBienvenida = async (params: EmailBienvenidaParams): Prom
     }
 };
 
+/**
+ * Notifica al cliente que su ticket recibió una respuesta
+ */
 export const enviarEmailTicketRespuesta = async (
     destinatario: string,
     asuntoTicket: string,
@@ -121,12 +124,66 @@ export const enviarEmailTicketRespuesta = async (
     ticketId: string
 ): Promise<void> => {
     if (!process.env.SMTP_USER) return;
+    
+    // Un diseño más estilizado para la respuesta del ticket
+    const htmlSnippet = `
+    <div style="font-family:sans-serif;color:#333;max-width:600px;margin:auto;border:1px solid #eee;padding:20px;border-radius:10px;">
+        <h2 style="color:#3b82f6;">Nueva respuesta en tu ticket 🎙️</h2>
+        <p>Hola, el equipo de soporte de <strong>ONRADIO</strong> ha respondido a tu consulta:</p>
+        <div style="background:#f9f9f9;padding:15px;border-left:4px solid #3b82f6;font-style:italic;margin:20px 0;">
+            "${respuesta}"
+        </div>
+        <p style="font-size:14px;color:#666;">Ticket: <strong>${asuntoTicket}</strong> (Ref: #${ticketId.slice(-6)})</p>
+        <hr style="border:0;border-top:1px solid #eee;margin:20px 0;" />
+        <p style="font-size:12px;color:#999;text-align:center;">Este es un mensaje automático, por favor no lo respondas directamente.</p>
+    </div>`;
+
     try {
         await transporter.sendMail({
             from: `"Soporte ONRADIO" <${process.env.SMTP_USER}>`,
             to: destinatario,
-            subject: `[Ticket #${ticketId.slice(0, 8)}] Nueva respuesta: ${asuntoTicket}`,
-            html: `<p>El equipo de ONRADIO respondió tu ticket: <strong>${asuntoTicket}</strong></p><blockquote>${respuesta}</blockquote><p>Ingresá a tu panel para ver el hilo completo.</p>`,
+            subject: `[Re: #${ticketId.slice(-6)}] Nueva respuesta: ${asuntoTicket}`,
+            html: htmlSnippet,
         });
-    } catch (e) { /* no blocking */ }
+    } catch (e: any) {
+        console.error('[Email] Error enviando respuesta de ticket:', e.message);
+    }
+};
+
+/**
+ * Notifica a los administradores del sistema que se ha creado un nuevo ticket
+ */
+export const enviarNotificacionNuevoTicket = async (
+    radioNombre: string,
+    asuntoTicket: string,
+    mensaje: string,
+    ticketId: string
+): Promise<void> => {
+    const adminEmail = process.env.ADMIN_NOTIFICACIONES_EMAIL || process.env.SMTP_USER;
+    if (!adminEmail) return;
+
+    const htmlSnippet = `
+    <div style="font-family:sans-serif;color:#333;max-width:600px;margin:auto;border:1px solid #eee;padding:20px;border-radius:10px;background:#fff5f5;">
+        <h2 style="color:#e11d48;">🚨 Nuevo Ticket de Soporte</h2>
+        <p>La radio <strong>${radioNombre}</strong> ha abierto un nuevo ticket.</p>
+        <p><strong>Asunto:</strong> ${asuntoTicket}</p>
+        <div style="background:#fff;padding:15px;border:1px solid #fecaca;border-radius:8px;margin:20px 0;">
+            ${mensaje}
+        </div>
+        <a href="${process.env.ADMIN_URL || '#'}/tickets/${ticketId}" 
+           style="display:inline-block;background:#e11d48;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;font-weight:bold;">
+           Ver Ticket en el Panel
+        </a>
+    </div>`;
+
+    try {
+        await transporter.sendMail({
+            from: `"Sistema ONRADIO" <${process.env.SMTP_USER}>`,
+            to: adminEmail,
+            subject: `🚨 NUEVO TICKET: ${radioNombre} - ${asuntoTicket}`,
+            html: htmlSnippet,
+        });
+    } catch (e: any) {
+        console.error('[Email] Error enviando notificación de nuevo ticket:', e.message);
+    }
 };
