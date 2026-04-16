@@ -48,6 +48,8 @@ export const injectTenant = async (
         }
 
         // --- AUTO-CORRECCIÓN DE TENANT VÍA AUTH ---
+        // Si no encontramos la radio por headers/host, pero tenemos un token, 
+        // rescatamos la radio asociada al usuario logueado.
         if (!radio) {
             const authHeader = req.headers['authorization'];
             const token = authHeader && authHeader.split(' ')[1];
@@ -77,6 +79,7 @@ export const injectTenant = async (
         }
 
         if (radio.suspendida) {
+            // Si la radio está suspendida, solo el SUPER_ADMIN puede entrar a gestionar
             const authHeader = req.headers['authorization'];
             const token = authHeader && authHeader.split(' ')[1];
             let isSuperAdmin = false;
@@ -96,16 +99,18 @@ export const injectTenant = async (
             }
         }
 
+        // Inyectamos el ID y el objeto completo para compatibilidad
         (req as any).tenantId = radio.id;
         (req as any).radio = radio;
         next();
     } catch (error: any) {
-        console.error('🚫 [TenantMW Error]:', error.message || error);
+        console.error('❌ [TenantMW Error]:', error.message || error);
         
+        // Si el error es de Prisma (ej: fallo de conexión)
         if (error.code && error.code.startsWith('P')) {
             return res.status(503).json({ 
                 error: 'Servicio temporalmente no disponible.',
-                mensaje: 'Error de conexión con la base de datos.'
+                mensaje: 'Error de conexión con la base de datos.' 
             });
         }
 

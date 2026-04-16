@@ -2,27 +2,33 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = (process.env.JWT_SECRET as string) || 'DEV_SECRET_CHANGE_ME';
-
-export interface AuthPayload {
-    id: string;
-    email: string;
-    rol: string;
-    radioId?: string;
+if (!process.env.JWT_SECRET) {
+    console.warn("⚠️ JWT_SECRET no esta definido en .env, usando clave de desarrollo.");
 }
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export interface AuthPayload {
+    userId: string;
+    radioId: string | null;
+    rol: string;
+}
+
+export const authenticateToken = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            console.log(`[authenticateToken] 🚫 Sin Token. URL: ${req.originalUrl}`);
-            return res.status(401).json({ error: 'Acceso denegado. Se requiere autenticación.', code: 'AUTH_REQUIRED' });
+            console.log(`[authenticateToken] ❌ Token faltante. URL: ${req.originalUrl}`);
+            return res.status(401).json({ error: 'Acceso no autorizado. Token faltante.' });
         }
 
         jwt.verify(token, JWT_SECRET, (err, user) => {
             if (err) {
-                console.log(`[authenticateToken] 🚫 Token inválido o expirado. Error: ${err.message} URL: ${req.originalUrl}`);
+                console.log(`[authenticateToken] ❌ Token inválido o expirado. Error: ${err.message} URL: ${req.originalUrl}`);
                 const message = err.name === 'TokenExpiredError' ? 'Tu sesión ha expirado. Por favor, volvé a ingresar.' : 'Token inválido o falta de permisos.';
                 return res.status(403).json({ error: message, code: 'AUTH_REQUIRED' });
             }
@@ -32,7 +38,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
             next();
         });
     } catch (error: any) {
-        console.log(`[authenticateToken] 🚫 Crash. Error: ${error.message}`);
+        console.log(`[authenticateToken] ❌ Crash. Error: ${error.message}`);
         return res.status(401).json({ error: 'Error procesando token.' });
     }
 };
@@ -41,14 +47,14 @@ export const requireRoles = (roles: string[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const user = (req as any).user as AuthPayload;
         if (!user) {
-            console.log(`[requireRoles] 🚫 Falta info de usuario en request. URL: ${req.originalUrl}`);
+            console.log(`[requireRoles] ❌ Falta info de usuario en request. URL: ${req.originalUrl}`);
             return res.status(401).json({ error: 'Falta información de usuario.' });
         }
         
         if (roles.includes(user.rol) || user.rol === 'SUPER_ADMIN') {
             next();
         } else {
-            console.log(`[requireRoles] 🚫 Rol denegado. RolUser: ${user.rol} | Permitidos: ${roles.join(',')} | URL: ${req.originalUrl}`);
+            console.log(`[requireRoles] ❌ Rol denegado. RolUser: ${user.rol} | Permitidos: ${roles.join(',')} | URL: ${req.originalUrl}`);
             return res.status(403).json({ error: 'No tienes permiso para acceder a este recurso.' });
         }
     };
@@ -79,7 +85,7 @@ export const verifyRadioAccess = (req: Request, res: Response, next: NextFunctio
     const isDevAdmin = process.env.NODE_ENV !== 'production' && user.rol === 'ADMIN_RADIO';
 
     if (!user.radioId || (tenantId && user.radioId !== tenantId && !isLocalDemo && !isDevAdmin)) {
-        console.log(`[verifyRadioAccess] 🚫 Bloqueado: UserRadioId: ${user.radioId} | TenantIdReq: ${tenantId} | URL: ${req.originalUrl}`);
+        console.log(`[verifyRadioAccess] ❌ Bloqueado: UserRadioId: ${user.radioId} | TenantIdReq: ${tenantId} | URL: ${req.originalUrl}`);
         return res.status(403).json({ error: 'No tienes permisos para acceder a esta emisora.' });
     }
 
