@@ -73,12 +73,13 @@ export class IcecastService {
                         }
                     }
 
-                    // Decode HTML entities
+                    // Decode HTML entities if any (like &amp;) - basic replace
                     currentTrack = currentTrack.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
                     // Emitir a los clientes conectados a este radioId
                     this.io.to(radio.id).emit('metadata_stream', { cancion: currentTrack });
                 } catch (e) {
+                    // Fail silently for individual failing streams (offline, etc)
                 }
             }
         } catch (error) {

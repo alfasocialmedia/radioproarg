@@ -14,7 +14,7 @@ async function main() {
         });
         console.log(`✅ Radio '${r.nombre}' actualizada: onradio -> demo`);
     } else {
-        console.log('❌ No se encontró la radio con subdominio onradio.');
+        console.log('⚠️ No se encontró la radio con subdominio onradio.');
     }
 }
 

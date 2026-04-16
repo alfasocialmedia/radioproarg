@@ -2,6 +2,10 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 import { ONRADIO_KNOWLEDGE } from '../data/onradio-knowledge';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FAQ — Se gestionan vía Settings globales como JSON
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const getFaq = async (_req: Request, res: Response) => {
     try {
         const setting = await prisma.setting.findUnique({ where: { clave: 'faq_items' } });
@@ -12,7 +16,7 @@ export const getFaq = async (_req: Request, res: Response) => {
 
 export const saveFaq = async (req: Request, res: Response) => {
     try {
-        const items = req.body; 
+        const items = req.body; // array de { pregunta, respuesta, orden }
         await prisma.setting.upsert({
             where: { clave: 'faq_items' },
             create: { clave: 'faq_items', valor: JSON.stringify(items) },
@@ -21,6 +25,10 @@ export const saveFaq = async (req: Request, res: Response) => {
         res.json({ mensaje: 'FAQ guardada correctamente.' });
     } catch (e) { res.status(500).json({ error: 'Error guardando FAQ.' }); }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TUTORIALES — También vía Settings como JSON
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const getTutoriales = async (_req: Request, res: Response) => {
     try {
@@ -41,6 +49,10 @@ export const saveTutoriales = async (req: Request, res: Response) => {
         res.json({ mensaje: 'Tutoriales guardados correctamente.' });
     } catch (e) { res.status(500).json({ error: 'Error guardando tutoriales.' }); }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAQ IA — Responde preguntas usando Gemini + knowledge base de ONRADIO
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const askFaqAI = async (req: Request, res: Response) => {
     const { pregunta, historial } = req.body;
@@ -100,6 +112,7 @@ Respuesta (sin saludo inicial):`;
         if (!response.ok) {
             const errorBody = await response.text();
             console.error('[FAQ IA] Error detallado de Gemini:', response.status, errorBody);
+            require('fs').writeFileSync('gemini_error.txt', `STATUS: ${response.status}\n\nBODY:\n${errorBody}`);
             return res.status(502).json({ error: 'Error al consultar el servicio de IA. Revisa logs.' });
         }
 

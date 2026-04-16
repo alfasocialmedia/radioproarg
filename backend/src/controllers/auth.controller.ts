@@ -59,6 +59,9 @@ export const registrarUsuario = async (req: Request, res: Response) => {
     try {
         const { email, password, rol, radioId } = req.body;
 
+        // TODO: En produccion, este endpoint debiera estar protegido y solo un Super Admin 
+        // o Admin Radio podría registrar un nuevo usuario en su radio.
+
         const userExists = await prisma.usuario.findUnique({ where: { email } });
         if (userExists) {
             return res.status(400).json({ error: 'El email ya se encuentra registrado.' });
@@ -117,6 +120,7 @@ export const updateMe = async (req: Request, res: Response) => {
         const userId = (req as any).user.userId;
         const { nombre, email, telefono, password } = req.body;
 
+        // Validar si el email ya existe en otro usuario
         if (email) {
             const existing = await prisma.usuario.findFirst({
                 where: { 
@@ -158,3 +162,4 @@ export const updateMe = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error actualizando perfil.' });
     }
 };
+

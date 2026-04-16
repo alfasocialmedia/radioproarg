@@ -1,0 +1,74 @@
+
+> frontend@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.5s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/46) ...
+  Generating static pages using 15 workers (11/46) 
+  Generating static pages using 15 workers (22/46) 
+  Generating static pages using 15 workers (34/46) 
+✓ Generating static pages using 15 workers (46/46) in 990.5ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/apariencia
+├ ○ /admin/categorias
+├ ○ /admin/dashboard
+├ ○ /admin/emisora
+├ ○ /admin/facturacion
+├ ○ /admin/live
+├ ○ /admin/media
+├ ○ /admin/noticias
+├ ○ /admin/notificaciones
+├ ○ /admin/perfil
+├ ○ /admin/podcasts
+├ ƒ /admin/podcasts/[id]
+├ ○ /admin/programacion
+├ ○ /admin/publicidad
+├ ○ /admin/settings
+├ ○ /admin/superadmin
+├ ○ /admin/tickets
+├ ○ /admin/transmision
+├ ○ /admin/usuarios
+├ ○ /checkout
+├ ○ /checkout/error
+├ ○ /checkout/exito
+├ ○ /checkout/pendiente
+├ ○ /dashboard
+├ ○ /faq
+├ ○ /login
+├ ○ /privacidad
+├ ○ /radio
+├ ○ /radio-online
+├ ƒ /radio/[slug]
+├ ƒ /radio/[slug]/noticias
+├ ƒ /radio/[slug]/noticias/[noticiaSlug]
+├ ƒ /radio/[slug]/podcast
+├ ƒ /radio/[slug]/podcast/[podcastId]
+├ ƒ /radio/[slug]/programacion
+├ ○ /superadmin
+├ ○ /superadmin/clientes
+├ ○ /superadmin/emisoras
+├ ○ /superadmin/faq
+├ ○ /superadmin/pagos
+├ ○ /superadmin/perfil
+├ ○ /superadmin/planes
+├ ○ /superadmin/settings
+├ ○ /superadmin/suscripciones
+├ ○ /superadmin/tickets
+├ ○ /superadmin/tutoriales
+├ ○ /terminos
+└ ○ /tutoriales
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

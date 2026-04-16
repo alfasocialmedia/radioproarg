@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+// POST /noticias/:id/compartir
 export const registrarCompartido = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { redSocial } = req.body; 
+        const { redSocial } = req.body; // 'facebook' | 'whatsapp' | 'twitter'
 
         let field = '';
         if (redSocial === 'facebook') field = 'sharesFacebook';
@@ -25,10 +26,11 @@ export const registrarCompartido = async (req: Request, res: Response) => {
     }
 };
 
+// POST /noticias/:id/reaccionar
 export const registrarReaccion = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
-        const { tipo } = req.body; 
+        const { tipo } = req.body; // 'meEncanto' | 'interesante' | 'regular' | 'noMeGusto'
 
         let field = '';
         if (tipo === 'meEncanto') field = 'votosMeEncanto';

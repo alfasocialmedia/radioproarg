@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+// GET /publicidad/banners — listar banners activos (públicos)
 export const listarBanners = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -18,6 +19,7 @@ export const listarBanners = async (req: Request, res: Response) => {
     }
 };
 
+// GET /publicidad/auspiciantes — listar todos los auspiciantes (admin)
 export const listarAuspiciantes = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -32,6 +34,7 @@ export const listarAuspiciantes = async (req: Request, res: Response) => {
     }
 };
 
+// POST /publicidad/auspiciantes — crear auspiciante
 export const crearAuspiciante = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -47,15 +50,18 @@ export const crearAuspiciante = async (req: Request, res: Response) => {
     }
 };
 
+// POST /publicidad/banners — crear banner
 export const crearBanner = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
         const { auspicianteId, imagenUrl, urlDestino, posicion, fechaInicio, fechaFin, mostrarMobile, mostrarEscritorio } = req.body;
         if (!auspicianteId || !imagenUrl) return res.status(400).json({ error: 'auspicianteId e imagenUrl son requeridos.' });
 
+
         const auspiciante = await prisma.auspiciante.findFirst({ where: { id: String(auspicianteId), radioId } });
         if (!auspiciante) return res.status(404).json({ error: 'Auspiciante no encontrado o no pertenece a esta radio.' });
 
+        // Mapear posicion string a UbicacionBanner enum
         const ubicacionMap: Record<string, any> = {
             'header': 'HEADER', 'footer': 'FOOTER', 'sidebar': 'SIDEBAR', 'under_player': 'UNDER_PLAYER',
             'HEADER': 'HEADER', 'FOOTER': 'FOOTER', 'SIDEBAR': 'SIDEBAR', 'UNDER_PLAYER': 'UNDER_PLAYER'
@@ -81,6 +87,7 @@ export const crearBanner = async (req: Request, res: Response) => {
     }
 };
 
+// DELETE /publicidad/banners/:id — eliminar banner
 export const eliminarBanner = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -97,12 +104,13 @@ export const eliminarBanner = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error eliminando banner.' });
     }
 };
-
+// PUT /publicidad/banners/:id — actualizar banner
 export const actualizarBanner = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const radioId = (req as any).tenantId;
         const { auspicianteId, imagenUrl, urlDestino, posicion, fechaInicio, fechaFin, mostrarMobile, mostrarEscritorio } = req.body;
+
 
         const banner = await prisma.banner.findFirst({
             where: { id: String(id), auspiciante: { radioId } }
@@ -127,6 +135,7 @@ export const actualizarBanner = async (req: Request, res: Response) => {
                 ...(mostrarEscritorio !== undefined && { mostrarEscritorio: Boolean(mostrarEscritorio) }),
             }
         });
+
 
         res.json(updated);
     } catch (error) {

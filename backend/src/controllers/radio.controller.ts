@@ -3,6 +3,7 @@ import { prisma } from '../config/prisma';
 import { encrypt, decrypt } from '../utils/crypto';
 import { crearRadioEnSonicPanel } from '../services/sonicpanel.service';
 
+// GET /api/v1/radios/config -> Usa el Middleware Multi-Tenant
 export const getRadioConfig = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -57,6 +58,7 @@ export const getRadioConfig = async (req: Request, res: Response) => {
     }
 };
 
+// POST /api/v1/radios -> Creación de Radio (Ideal para el portal SuperAdmin)
 export const createRadio = async (req: Request, res: Response) => {
     try {
         const { nombre, subdominio, dominioCustom, streamUrl, plan: planSlug, autoProvision } = req.body;
@@ -71,6 +73,7 @@ export const createRadio = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'La radio con ese subdominio o dominio ya existe.' });
         }
 
+        // Buscar el plan para obtener bitrate y oyentes si se va a aprovisionar
         const plan = await prisma.plan.findUnique({ where: { slug: planSlug || 'audio' } });
 
         const nuevaRadio = await prisma.radio.create({
@@ -83,6 +86,7 @@ export const createRadio = async (req: Request, res: Response) => {
             }
         });
 
+        // Si se solicita aprovisionamiento automático
         if (autoProvision && plan) {
             try {
                 const sonicData = await crearRadioEnSonicPanel({
@@ -108,6 +112,7 @@ export const createRadio = async (req: Request, res: Response) => {
                 });
             } catch (sonicError) {
                 console.error('[CreateRadio] Error SonicPanel:', sonicError);
+                // No bloqueamos la creación de la radio en la DB, pero informamos al admin
             }
         }
 
@@ -118,6 +123,7 @@ export const createRadio = async (req: Request, res: Response) => {
     }
 };
 
+// POST /api/v1/radios/:id/provision -> Forzar aprovisionamiento en SonicPanel
 export const provisionRadio = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -159,11 +165,14 @@ export const provisionRadio = async (req: Request, res: Response) => {
     }
 };
 
+// PUT /api/v1/radios/:id/config -> Actualizar configuración completa de una radio
 export const updateRadioConfig = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const tenantId = (req as any).tenantId;
+        const tenantId = (req as any).tenantId; // Inyectado por injectTenant
         const targetId = id || tenantId;
+
+        console.log(`[RadioController] updateRadioConfig | targetId: ${targetId} | Body Keys: ${Object.keys(req.body).join(', ')}`);
 
         if (!targetId) {
             return res.status(404).json({ error: 'Radio no identificada.' });
@@ -213,6 +222,7 @@ export const updateRadioConfig = async (req: Request, res: Response) => {
                 ...(suspendida !== undefined && { suspendida }),
                 ...(planVenceEn !== undefined && { planVenceEn: planVenceEn ? new Date(planVenceEn) : null }),
 
+                // Campos SonicPanel / Técnicos
                 ...(sonicpanelId !== undefined && { sonicpanelId }),
                 ...(streamUser !== undefined && { streamUser }),
                 ...(streamPassword !== undefined && { streamPassword: streamPassword ? encrypt(streamPassword) : null }),
@@ -227,6 +237,7 @@ export const updateRadioConfig = async (req: Request, res: Response) => {
             include: { plan: { select: { id: true, slug: true, nombre: true } } }
         });
 
+        // Desencriptar antes de devolver
         if (radio) {
             radio.streamPassword = radio.streamPassword ? decrypt(radio.streamPassword) : null;
             radio.ftpPassword = radio.ftpPassword ? decrypt(radio.ftpPassword) : null;
@@ -270,7 +281,7 @@ export const getRadios = async (req: Request, res: Response) => {
                 },
                 streamPassword: r.streamPassword ? decrypt(r.streamPassword) : null,
                 ftpPassword: r.ftpPassword ? decrypt(r.ftpPassword) : null,
-                medios: undefined
+                medios: undefined // No enviamos todos los medios al frontend para ahorrar ancho de banda
             };
         });
 
@@ -286,6 +297,9 @@ export const eliminarRadio = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
+        // Al eliminar radio debemos eliminar en cascada, o si prisma lo maneja por onDelete Cascade, 
+        // aquí solo se borra manual por ahora todo lo relacionado a la radio si no hay schema cascade
+        // Por safety, borraremos primero entidades dependientes:
         await prisma.auspiciante.deleteMany({ where: { radioId: String(id) } });
         await prisma.programacion.deleteMany({ where: { radioId: String(id) } });
         await prisma.noticia.deleteMany({ where: { radioId: String(id) } });
@@ -343,6 +357,8 @@ export const getRadioStats = async (req: Request, res: Response) => {
 export const getHistoricalStats = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
+
+        // Limite a los últimos 7 días
         const hace7Dias = new Date();
         hace7Dias.setDate(hace7Dias.getDate() - 7);
 
@@ -381,6 +397,7 @@ export const getStorageStats = async (req: Request, res: Response) => {
         const extraGB = (radio as any).almacenamientoExtraGB || 0;
         const totalGB = planGB + extraGB;
         
+        // Si el total es 0, asumimos un default mínimo para evitar división por cero
         const effectiveLimitGB = totalGB > 0 ? totalGB : 0.001; 
         const limitBytes = effectiveLimitGB * 1024 * 1024 * 1024;
         const percentage = (usedBytes / limitBytes) * 100;

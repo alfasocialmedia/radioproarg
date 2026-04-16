@@ -39,8 +39,8 @@ export const getDashboardStats = async (req: Request, res: Response) => {
             totalUsuarios,
             ticketsAbiertos,
             mrrTotal: Math.round(mrrTotal),
-            totalStorageAssigned, 
-            totalStorageLimit: 100, 
+            totalStorageAssigned, // GB
+            totalStorageLimit: 100, // GB (Ejemplo Contabo configurado)
             ultimasRadios: radios.slice(0, 6)
         });
     } catch (error) {
@@ -56,6 +56,7 @@ export const getTodasRadios = async (req: Request, res: Response) => {
             orderBy: { fechaCreacion: 'desc' },
         });
 
+        // Buscamos a los dueños (usuarios con rol ADMIN_RADIO de cada emisora)
         const radiosConOwner = await Promise.all(radios.map(async (r) => {
             const admin = await prisma.usuario.findFirst({
                 where: { radioId: r.id, rol: 'ADMIN_RADIO' }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import webpush from 'web-push';
 import { prisma } from '../config/prisma';
 
+// Configurar VAPID una sola vez al importar el módulo
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
         process.env.VAPID_SUBJECT || 'mailto:admin@onradio.cloud',
@@ -12,10 +13,20 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     console.warn("⚠️ Las claves VAPID no están configuradas en .env. Las notificaciones Push estarán desactivadas.");
 }
 
+// -----------------------------------------------------------------------
+// GET /api/v1/push/vapid-public-key
+// Retorna la clave pública VAPID para que el SW pueda suscribirse
+// -----------------------------------------------------------------------
 export const getVapidPublicKey = (req: Request, res: Response) => {
     res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
 };
 
+// -----------------------------------------------------------------------
+// POST /api/v1/push/subscribe
+// El navegador del oyente guarda su suscripción
+// Body: { endpoint, keys: { p256dh, auth } }
+// Header: x-tenant => subdominio de la radio
+// -----------------------------------------------------------------------
 export const subscribe = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId as string;
@@ -28,6 +39,7 @@ export const subscribe = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Datos de suscripción incompletos.' });
         }
 
+        // Upsert para no duplicar si el mismo browser se suscribe dos veces
         await prisma.pushSubscription.upsert({
             where: { endpoint },
             update: { p256dh: keys.p256dh, auth: keys.auth, radioId },
@@ -41,6 +53,10 @@ export const subscribe = async (req: Request, res: Response) => {
     }
 };
 
+// -----------------------------------------------------------------------
+// DELETE /api/v1/push/unsubscribe
+// Body: { endpoint }
+// -----------------------------------------------------------------------
 export const unsubscribe = async (req: Request, res: Response) => {
     try {
         const { endpoint } = req.body as { endpoint: string };
@@ -51,6 +67,10 @@ export const unsubscribe = async (req: Request, res: Response) => {
     }
 };
 
+// -----------------------------------------------------------------------
+// POST /api/v1/push/send  (solo ADMIN_RADIO / SUPER_ADMIN)
+// Body: { titulo, cuerpo, url? }
+// -----------------------------------------------------------------------
 export const sendNotification = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId as string;
@@ -82,6 +102,7 @@ export const sendNotification = async (req: Request, res: Response) => {
                     );
                     enviadas++;
                 } catch (err: any) {
+                    // Si el endpoint ya no es válido (410 Gone), eliminarlo
                     if (err.statusCode === 410 || err.statusCode === 404) {
                         fallidas.push(sub.endpoint);
                     }
@@ -89,12 +110,14 @@ export const sendNotification = async (req: Request, res: Response) => {
             })
         );
 
+        // Limpiar suscripciones inválidas
         if (fallidas.length) {
             await prisma.pushSubscription.deleteMany({
                 where: { endpoint: { in: fallidas } },
             });
         }
 
+        // Guardar registro en el historial
         await prisma.pushNotification.create({
             data: { radioId, titulo, cuerpo, url, enviadas },
         });
@@ -106,6 +129,9 @@ export const sendNotification = async (req: Request, res: Response) => {
     }
 };
 
+// -----------------------------------------------------------------------
+// GET /api/v1/push/history  (solo admin)
+// -----------------------------------------------------------------------
 export const getHistory = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId as string;
@@ -120,6 +146,9 @@ export const getHistory = async (req: Request, res: Response) => {
     }
 };
 
+// -----------------------------------------------------------------------
+// GET /api/v1/push/count  (cantidad de suscriptores de esta radio)
+// -----------------------------------------------------------------------
 export const getSubscriberCount = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId as string;

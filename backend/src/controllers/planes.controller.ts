@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PLANES
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const getPlanes = async (_req: Request, res: Response) => {
     try {
         const planes = await prisma.plan.findMany({ where: { activo: true }, orderBy: { precioMensual: 'asc' } });
@@ -36,6 +40,10 @@ export const deletePlan = async (req: Request, res: Response) => {
         res.json({ mensaje: 'Plan desactivado.' });
     } catch (e) { res.status(500).json({ error: 'Error eliminando el plan.' }); }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS GLOBALES
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const getSettings = async (_req: Request, res: Response) => {
     try {

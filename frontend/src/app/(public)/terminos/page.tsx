@@ -9,6 +9,7 @@ export default function TerminosPage() {
     return (
         <div className="bg-[#04080f] text-slate-50 min-h-screen">
             <div className="max-w-3xl mx-auto px-5 pt-32 pb-24">
+                {/* Header */}
                 <div className="mb-12">
                     <p className="text-red-500 text-xs font-extrabold uppercase tracking-[.2em] mb-3">Legal</p>
                     <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">Términos y Condiciones</h1>

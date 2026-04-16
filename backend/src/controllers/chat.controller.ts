@@ -13,9 +13,11 @@ export const getHistorial = async (req: Request, res: Response) => {
             where: { radioId },
             include: { replyTo: true },
             orderBy: { fechaCreacion: 'desc' },
-            take: 100 
+            take: 100 // Traer los últimos 100
         });
 
+        // Los devolvemos en orden cronológico (los más antiguos primero) 
+        // porque la UI general de chat los apila hacia abajo.
         return res.json(mensajes.reverse()); 
     } catch (error) {
         console.error("Error getHistorial:", error);

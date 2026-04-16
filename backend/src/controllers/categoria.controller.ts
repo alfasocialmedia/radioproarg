@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+// CategoriaNoticia es global (no tiene radioId en el schema actual)
 export const getCategorias = async (_req: Request, res: Response) => {
     try {
         const categorias = await prisma.categoriaNoticia.findMany({

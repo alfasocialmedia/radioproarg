@@ -22,7 +22,7 @@ async function main() {
         if (u.radio) {
             console.log(`  -> Vinculado a Radio: ${u.radio.nombre} (${u.radio.subdominio})`);
         } else {
-            console.log(`  -> ¿SÍ? SIN RADIO VINCULADA`);
+            console.log(`  -> ⚠️ SIN RADIO VINCULADA`);
         }
     });
 
@@ -30,7 +30,7 @@ async function main() {
         const u = usuarios[0];
         const r = radios[0];
         if (u.radioId !== r.id) {
-            console.log(`\n¿SÍ? DISCREPANCIA DETECTADA: El usuario no tiene el ID de la radio creada.`);
+            console.log(`\n⚠️ DISCREPANCIA DETECTADA: El usuario no tiene el ID de la radio creada.`);
             console.log(`Ejecuta: await prisma.usuario.update({ where: { id: '${u.id}' }, data: { radioId: '${r.id}' } })`);
         }
     }

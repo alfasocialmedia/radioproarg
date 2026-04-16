@@ -53,6 +53,7 @@ export const updateUsuario = async (req: Request, res: Response) => {
         const id = req.params.id as string;
         const { nombre, rol, telefono, activo, password } = req.body;
 
+        // Verificar que el usuario pertenece a esta radio
         const user = await prisma.usuario.findFirst({ where: { id, radioId } });
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado.' });

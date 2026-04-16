@@ -110,7 +110,7 @@ export const injectTenant = async (
         if (error.code && error.code.startsWith('P')) {
             return res.status(503).json({ 
                 error: 'Servicio temporalmente no disponible.',
-                mensaje: 'Error de conexión con la base de datos.' 
+                mensaje: 'Error de conexión con la base de datos.'
             });
         }
 

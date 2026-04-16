@@ -4,6 +4,7 @@ import { webhookMetadata, updateDonaciones } from '../controllers/radioExtras.co
 import { injectTenant } from '../middlewares/tenant.middleware';
 import { authenticateToken, requireRoles } from '../middlewares/auth.middleware';
 
+// Rutas de configuración de radio - Actualizado: 28/03/2026 15:45
 const router = Router();
 
 router.get('/config', injectTenant, getRadioConfig);

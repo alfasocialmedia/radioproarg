@@ -29,6 +29,7 @@ export const createEpisodio = async (req: Request, res: Response) => {
             const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
             audioMp3Url = `${baseUrl}/uploads/${req.file.filename}`;
 
+            // Registrar en Media para el gestor centralizado
             try {
                 const podcast = await prisma.podcast.findUnique({ where: { id: podcastId } });
                 if (podcast) {
@@ -37,7 +38,7 @@ export const createEpisodio = async (req: Request, res: Response) => {
                             radioId: podcast.radioId,
                             nombre: req.file.originalname,
                             url: audioMp3Url,
-                            tipo: 'documento',
+                            tipo: 'documento', // O 'audio' si expandimos
                             mimetype: req.file.mimetype,
                             tamanoBytes: req.file.size
                         }
@@ -73,6 +74,7 @@ export const updateEpisodio = async (req: Request, res: Response) => {
             const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
             audioMp3Url = `${baseUrl}/uploads/${req.file.filename}`;
             
+            // Registrar en Media para el gestor centralizado
             try {
                 const podcast = await prisma.podcast.findUnique({ where: { id: exists.podcastId } });
                 if (podcast) {

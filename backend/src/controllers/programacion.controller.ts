@@ -29,6 +29,7 @@ export const crearPrograma = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Debes seleccionar al menos un día.' });
         }
 
+        // Validación de superposición
         const overlapping = await prisma.programacion.findFirst({
             where: {
                 radioId,
@@ -144,3 +145,4 @@ export const eliminarPrograma = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error al eliminar programa.' });
     }
 };
+

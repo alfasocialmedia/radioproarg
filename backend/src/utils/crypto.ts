@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
+// ENCRYPTION_KEY debe ser de 32 bytes (256 bits)
 const ENCRYPTION_KEY = (process.env.ENCRYPTION_KEY as string) || 'OnRadio2_Secret_Encryption_Key_32'; 
 const IV_LENGTH = 16;
 
@@ -25,6 +26,6 @@ export function decrypt(text: string): string {
         return decrypted.toString();
     } catch (error) {
         console.error("[CRYPTO] Error al desencriptar:", error);
-        return text;
+        return text; // Fallback al texto original si falla
     }
 }

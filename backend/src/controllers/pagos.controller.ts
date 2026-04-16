@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 import { decrypt } from '../utils/crypto';
 
+// Pagos de una radio
 export const getPagosRadio = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -13,6 +14,7 @@ export const getPagosRadio = async (req: Request, res: Response) => {
     } catch (e) { res.status(500).json({ error: 'Error obteniendo pagos.' }); }
 };
 
+// Todos los pagos (SuperAdmin)
 export const getTodosPagos = async (_req: Request, res: Response) => {
     try {
         const pagos = await prisma.payment.findMany({
@@ -23,6 +25,7 @@ export const getTodosPagos = async (_req: Request, res: Response) => {
     } catch (e) { res.status(500).json({ error: 'Error obteniendo pagos.' }); }
 };
 
+// Datos de transmisión de la radio del cliente
 export const getDatosTransmision = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -46,6 +49,7 @@ export const getDatosTransmision = async (req: Request, res: Response) => {
         });
         if (!radio) return res.status(404).json({ error: 'Radio no encontrada.' });
 
+        // Descifrar contraseñas antes de enviar
         if (radio.streamPassword) radio.streamPassword = decrypt(radio.streamPassword);
         if (radio.ftpPassword) radio.ftpPassword = decrypt(radio.ftpPassword);
 

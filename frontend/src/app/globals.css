@@ -27,6 +27,7 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Modern Dark Scrollbar Global */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -46,10 +47,12 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Custom class to hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 .scrollbar-hide {
-  -ms-overflow-style: none; 
-  scrollbar-width: none; 
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
+

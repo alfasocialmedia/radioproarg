@@ -10,6 +10,7 @@ export const webhookMetadata = async (req: Request, res: Response): Promise<void
         if (artist && title) cancion = `${artist} - ${title}`;
         if (!cancion) cancion = "Trasmisión en Vivo";
 
+        // Emitir a los sockets
         const io = req.app.get('io');
         if (io) {
             io.to(radioId).emit('metadata_stream', { cancion });

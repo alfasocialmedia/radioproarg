@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+// [Admin] Crear Encuesta
 export const crearEncuesta = async (req: Request, res: Response): Promise<void> => {
     try {
         const radioId = (req as any).tenantId;
         const { pregunta, opciones, noticiaId, estado, estilo, fechaFin, mostrarResultados } = req.body; 
 
+        // Si es una encuesta global, podemos desactivar las anteriores
         if (!noticiaId && estado === "PUBLISHED") {
             await prisma.encuesta.updateMany({
                 where: { radioId, noticiaId: null, activa: true },
@@ -13,6 +15,7 @@ export const crearEncuesta = async (req: Request, res: Response): Promise<void> 
             });
         }
 
+        // Crear la nueva
         const nuevaEncuesta = await prisma.encuesta.create({
             data: {
                 radioId,
@@ -34,6 +37,7 @@ export const crearEncuesta = async (req: Request, res: Response): Promise<void> 
             include: { opciones: true }
         });
 
+        // Emitir WS solo si está publicada
         if (estado === "PUBLISHED") {
             const io = req.app.get('io');
             if (io) {
@@ -48,6 +52,7 @@ export const crearEncuesta = async (req: Request, res: Response): Promise<void> 
     }
 };
 
+// [Publico] Obtener Activa
 export const obtenerEncuestaActiva = async (req: Request, res: Response): Promise<void> => {
     try {
         const radioId = (req as any).tenantId; 
@@ -77,6 +82,7 @@ export const obtenerEncuestaActiva = async (req: Request, res: Response): Promis
     }
 };
 
+// [Admin] Listar Todas
 export const listarEncuestas = async (req: Request, res: Response): Promise<void> => {
     try {
         const radioId = (req as any).tenantId;
@@ -97,6 +103,7 @@ export const listarEncuestas = async (req: Request, res: Response): Promise<void
     }
 };
 
+// [Publico] Votar
 export const votar = async (req: Request, res: Response): Promise<void> => {
     try {
         const opcionId = req.params.opcionId as string;
@@ -107,6 +114,7 @@ export const votar = async (req: Request, res: Response): Promise<void> => {
             include: { encuesta: true }
         });
 
+        // Enviar resultados actualizados por WS
         const encuestaActualizada = await prisma.encuesta.findUnique({
             where: { id: opcion.encuestaId },
             include: { 
@@ -128,6 +136,7 @@ export const votar = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+// [Publico] Obtener Encuesta por Noticia
 export const obtenerEncuestaPorNoticia = async (req: Request, res: Response): Promise<void> => {
     try {
         const noticiaId = req.params.noticiaId as string;
@@ -148,18 +157,21 @@ export const obtenerEncuestaPorNoticia = async (req: Request, res: Response): Pr
     }
 };
 
+// [Admin] Editar Encuesta
 export const editarEncuesta = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
         const radioId = (req as any).tenantId;
         const { pregunta, estado, estilo, fechaFin, noticiaId, activa, opciones, mostrarResultados } = req.body;
 
+        // Verificar pertenencia
         const existente = await prisma.encuesta.findFirst({ where: { id, radioId } });
         if (!existente) {
             res.status(403).json({ msg: "No tienes permiso para editar esta encuesta" });
             return;
         }
 
+        // 1. Actualizar datos básicos
         const encuesta = await prisma.encuesta.update({
             where: { id },
             data: {
@@ -173,9 +185,11 @@ export const editarEncuesta = async (req: Request, res: Response): Promise<void>
             }
         });
 
+        // 2. Sincronizar opciones si vienen en el body
         if (opciones && Array.isArray(opciones)) {
             const opcionesIds = opciones.map(o => o.id).filter(Boolean);
             
+            // Borrar las que ya no están
             await prisma.opcionEncuesta.deleteMany({
                 where: { 
                     encuestaId: id,
@@ -183,6 +197,7 @@ export const editarEncuesta = async (req: Request, res: Response): Promise<void>
                 }
             });
 
+            // Upsert de las restantes
             for (const [index, opt] of opciones.entries()) {
                 if (!opt.id) {
                     await prisma.opcionEncuesta.create({
@@ -216,6 +231,7 @@ export const editarEncuesta = async (req: Request, res: Response): Promise<void>
             }
         });
 
+        // Emitir WS
         const io = req.app.get('io');
         if (io && encuestaCompleta) {
             io.to(encuestaCompleta.radioId).emit('nueva_encuesta', encuestaCompleta);
@@ -228,6 +244,7 @@ export const editarEncuesta = async (req: Request, res: Response): Promise<void>
     }
 };
 
+// [Admin] Obtener Reporte Detallado
 export const obtenerReporteEncuesta = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
@@ -271,17 +288,20 @@ export const obtenerReporteEncuesta = async (req: Request, res: Response): Promi
     }
 };
 
+// [Admin] Eliminar Encuesta
 export const eliminarEncuesta = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
         const radioId = (req as any).tenantId;
         
+        // Verificar pertenencia
         const existente = await prisma.encuesta.findFirst({ where: { id, radioId } });
         if (!existente) {
             res.status(403).json({ msg: "No tienes permiso para eliminar esta encuesta" });
             return;
         }
 
+        // Primero eliminar opciones
         await prisma.opcionEncuesta.deleteMany({ where: { encuestaId: id } });
         await prisma.encuesta.delete({ where: { id } });
 

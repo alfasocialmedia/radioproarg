@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { prisma } from '../config/prisma';
 
+// Crear directorio de uploads si no existe
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -31,9 +32,10 @@ const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterC
 export const upload = multer({
     storage,
     fileFilter,
-    limits: { fileSize: 50 * 1024 * 1024 }, 
+    limits: { fileSize: 50 * 1024 * 1024 }, // Aumentado a 50MB para videos
 });
 
+// [Publico/Admin] Sube y guarda en DB
 export const subirArchivo = async (req: Request, res: Response) => {
     try {
         if (!req.file) {
@@ -46,6 +48,7 @@ export const subirArchivo = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'No se identificó la radio (radioId).' });
         }
 
+        // VALIDAR CUOTA DE DISCO
         const radio = await prisma.radio.findUnique({
             where: { id: radioId },
             include: { plan: true }
@@ -69,6 +72,7 @@ export const subirArchivo = async (req: Request, res: Response) => {
         const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
         const url = `${baseUrl}/uploads/${req.file.filename}`;
         
+        // Categorizar tipo
         let tipo = 'documento';
         const mt = req.file.mimetype;
         if (mt.startsWith('image/')) tipo = 'imagen';
@@ -93,12 +97,13 @@ export const subirArchivo = async (req: Request, res: Response) => {
     }
 };
 
+// [Admin] Listar medios de la radio
 export const listarMedia = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId || (req.headers['x-radio-id'] as string) || (req.headers['x-tenant-id'] as string);
         if (!radioId) return res.status(400).json({ error: 'No se identificó la radio.' });
 
-        const { tipo } = req.query; 
+        const { tipo } = req.query; // opcional: 'imagen' | 'video' | 'documento'
 
         const medios = await prisma.media.findMany({
             where: { 
@@ -108,6 +113,7 @@ export const listarMedia = async (req: Request, res: Response) => {
             orderBy: { creadoEn: 'desc' }
         });
 
+        // Mapear para que el frontend reciba "tamano" en lugar de "tamanoBytes" si es necesario
         const responseData = medios.map(m => ({
             ...m,
             tamano: m.tamanoBytes
@@ -120,6 +126,7 @@ export const listarMedia = async (req: Request, res: Response) => {
     }
 };
 
+// [Admin] Borrar medio
 export const eliminarMedia = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
@@ -127,8 +134,10 @@ export const eliminarMedia = async (req: Request, res: Response) => {
         const medio = await prisma.media.findUnique({ where: { id } });
         if (!medio) return res.status(404).json({ error: 'Archivo no encontrado' });
 
+        // Borrar registro DB
         await prisma.media.delete({ where: { id } });
 
+        // Intentar borrar archivo físico
         const filename = path.basename(medio.url);
         const fullPath = path.join(uploadDir, filename);
         if (fs.existsSync(fullPath)) {
@@ -142,4 +151,5 @@ export const eliminarMedia = async (req: Request, res: Response) => {
     }
 };
 
+// Mantener subirImagen para compatibilidad legacy (pero ahora guarda en Media)
 export const subirImagen = subirArchivo;

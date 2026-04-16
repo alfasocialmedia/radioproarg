@@ -151,7 +151,6 @@ Formato típico: https://stream.servidor.com:8000/live
 
 ## PORTAL PÚBLICO DE LA RADIO
 
-### Diseño y Funciones
 Cada radio con Plan Portal tiene un portal web en su subdominio (ej: miradio.onradio.com.ar):
 - Reproductor de audio en vivo siempre visible
 - Canción actual en reproducción (si el servidor lo soporta)
@@ -246,4 +245,4 @@ Cada radio con Plan Portal tiene un portal web en su subdominio (ej: miradio.onr
 **Idioma de la plataforma**: Español
 **Web principal**: onradio.com.ar
 **El sistema opera 24/7** con monitoreo automático del estado de los streams.
-\`;
+`;

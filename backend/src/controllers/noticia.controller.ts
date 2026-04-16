@@ -26,6 +26,7 @@ export const getNoticias = async (req: Request, res: Response) => {
     }
 };
 
+// GET /noticias/:slug -> Devuelve una noticia publicada por su slug
 export const getNoticiaBySlug = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -52,6 +53,7 @@ export const getNoticiaBySlug = async (req: Request, res: Response) => {
 
 
 
+// GET /noticias/admin -> Devuelve TODAS las noticias (borradores + publicadas) para el panel
 export const getNoticiasAdmin = async (req: Request, res: Response) => {
     try {
         const radioId = (req as any).tenantId;
@@ -76,6 +78,8 @@ export const crearNoticia = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'título, slug y contenido son requeridos.' });
         }
 
+        // Intentar obtener el autorId del token (si hay autenticación),
+        // si no, usar el primer usuario de la radio (modo admin demo)
         let autorId = (req as any).user?.userId;
         if (!autorId) {
             const primerAdmin = await prisma.usuario.findFirst({ where: { radioId } });
@@ -120,6 +124,7 @@ export const eliminarNoticia = async (req: Request, res: Response) => {
         const { id } = req.params;
         const radioId = (req as any).tenantId;
 
+        // Verificar que la noticia pertenece a la radio actual
         const noticia = await prisma.noticia.findFirst({
             where: { id: String(id), radioId }
         });
