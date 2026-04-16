@@ -1,0 +1,59 @@
+
+> backend@1.0.0 dev
+> nodemon src/index.ts
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: ts,json[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+📻 Iniciando Icecast Metadata Polling Service...
+[Worker] Inicializando recolector de estadísticas (Intervalo: 15 mins)
+Backend de ONRADIO escuchando en http://localhost:4000
+prisma:info Starting a postgresql pool with 17 connections.
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+[Worker] Recolectando estadísticas en vivo de todas las emisoras activas...
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl" FROM "public"."radios" WHERE "public"."radios"."activa" = $1 OFFSET $2
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+[Worker] Recolección finalizada. Procesadas: 0. Fallidas/Sin datos: 3.
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."nombre", "public"."radios"."subdominio", "public"."radios"."dominioCustom", "public"."radios"."logoUrl", "public"."radios"."colorPrimario", "public"."radios"."colorSecundario", "public"."radios"."fondoPlayerUrl", "public"."radios"."streamUrl", "public"."radios"."spotifyUrl", "public"."radios"."mostrarSpotify", "public"."radios"."mercadoPagoLink", "public"."radios"."paypalLink", "public"."radios"."fontFamily", "public"."radios"."plantilla", "public"."radios"."adHorizontal", "public"."radios"."adSquare", "public"."radios"."publicidadActiva", "public"."radios"."adDisplayBajoPlayer", "public"."radios"."activa", "public"."radios"."suspendida", "public"."radios"."fechaCreacion", "public"."radios"."planId", "public"."radios"."planVenceEn", "public"."radios"."periodoFacturacion", "public"."radios"."sonicpanelId", "public"."radios"."streamUser", "public"."radios"."streamPassword", "public"."radios"."streamPort", "public"."radios"."streamMount", "public"."radios"."ftpUser", "public"."radios"."ftpPassword" FROM "public"."radios" WHERE ("public"."radios"."subdominio" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."nombre", "public"."radios"."subdominio", "public"."radios"."dominioCustom", "public"."radios"."logoUrl", "public"."radios"."colorPrimario", "public"."radios"."colorSecundario", "public"."radios"."fondoPlayerUrl", "public"."radios"."streamUrl", "public"."radios"."spotifyUrl", "public"."radios"."mostrarSpotify", "public"."radios"."mercadoPagoLink", "public"."radios"."paypalLink", "public"."radios"."fontFamily", "public"."radios"."plantilla", "public"."radios"."adHorizontal", "public"."radios"."adSquare", "public"."radios"."publicidadActiva", "public"."radios"."adDisplayBajoPlayer", "public"."radios"."activa", "public"."radios"."suspendida", "public"."radios"."fechaCreacion", "public"."radios"."planId", "public"."radios"."planVenceEn", "public"."radios"."periodoFacturacion", "public"."radios"."sonicpanelId", "public"."radios"."streamUser", "public"."radios"."streamPassword", "public"."radios"."streamPort", "public"."radios"."streamMount", "public"."radios"."ftpUser", "public"."radios"."ftpPassword" FROM "public"."radios" WHERE ("public"."radios"."subdominio" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1
+prisma:query SELECT "public"."radios"."id", "public"."radios"."streamUrl", "public"."radios"."nombre" FROM "public"."radios" WHERE "public"."radios"."streamUrl" IS NOT NULL OFFSET $1

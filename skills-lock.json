@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "skills": {
+    "Frontend Responsive Design Standards": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "e01516e24ba086a603fdf753f9b4e428a3684fbf3010b9295352202fd3461fa8"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "frontend-slides": {
+      "source": "zarazhangrui/frontend-slides",
+      "sourceType": "github",
+      "computedHash": "96379d179814b0bdf17770d12ee2e31cc7d943b8e59e75cb0af252a41ef47d01"
+    },
+    "senior-backend": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "c15972382ed35ec141f419c3caec031156721d85b26c29fd22cd4cf9991acd7b"
+    },
+    "senior-backend-dev": {
+      "source": "codewithowais/senior-backend-dev",
+      "sourceType": "github",
+      "computedHash": "a00760719e1dae2bc4de8cec953702c4dec42847757a748bd57d25bd150c2a98"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "6337038fe1fe6bbe1b9f252ab678ee575859190bab6f0f246f4061824eb40875"
+    },
+    "radio-saas-design": {
+      "source": "local",
+      "sourceType": "local",
+      "path": ".agents/skills/radio-saas-design"
+    }
+  }
+}
