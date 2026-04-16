@@ -9,7 +9,6 @@ import fs from 'fs';
 
 const router = Router();
 
-// Storage config para audios
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = path.join(process.cwd(), 'uploads');
@@ -23,25 +22,21 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Rutas Públicas de consumo (requiere injectTenant para saber la radio)
 router.get('/public', injectTenant, getPodcasts);
 router.get('/public/episodios/recientes', injectTenant, getEpisodiosRecientes);
 router.get('/public/:podcastId/episodios', injectTenant, getEpisodiosPorPodcast);
 
-// Proteccion general (Admin o Editor)
 router.use(authenticateToken);
 router.use(injectTenant);
-router.use(verifyRadioAccess); // BLOQUEO CRÍTICO: El usuario debe pertenecer a este tenant
+router.use(verifyRadioAccess); 
 router.use(requireRoles(['ADMIN_RADIO', 'EDITOR_NOTICIAS']));
 
-// Rutas de Podcast (Programas)
 router.get('/', getPodcasts);
 router.get('/:id', getPodcastById);
 router.post('/', createPodcast); 
 router.put('/:id', updatePodcast);
 router.delete('/:id', deletePodcast);
 
-// Rutas de Episodios
 router.get('/:podcastId/episodios', getEpisodiosPorPodcast);
 router.post('/:podcastId/episodios', upload.single('audioFisico'), createEpisodio);
 router.put('/episodios/:id', upload.single('audioFisico'), updateEpisodio);
