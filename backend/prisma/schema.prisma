@@ -1,0 +1,452 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Plan {
+  id                String   @id @default(uuid())
+  nombre            String
+  slug              String   @unique
+  descripcion       String?
+  precioMensual     Float
+  precioAnual       Float
+  precioMensualUSD  Float?
+  precioAnualUSD    Float?
+  bitrate           Int      @default(128)
+  maxOyentes        Int      @default(100)
+  almacenamientoGB  Int      @default(5)
+  tieneCMS          Boolean  @default(false)
+  tienePublicidad   Boolean  @default(false)
+  tieneEstadisticas Boolean  @default(true)
+  activo            Boolean  @default(true)
+  fechaCreacion     DateTime @default(now())
+  ordenes           Order[]
+  radios            Radio[]
+
+  @@map("planes")
+}
+
+model Radio {
+  id                    String                @id @default(uuid())
+  nombre                String
+  subdominio            String                @unique
+  dominioCustom         String?               @unique
+  logoUrl               String?
+  faviconUrl            String?
+  ogImagenUrl           String?
+  metaTitulo            String?
+  metaDescripcion       String?
+  colorPrimario         String                @default("#3b82f6")
+  colorSecundario       String                @default("#020817")
+  colorBotones          String                @default("#3b82f6")
+  colorTextos           String                @default("#ffffff")
+  playerColor           String                @default("#1e293b")
+  playerImagenUrl       String?
+  playerBlur            Int                   @default(0)
+  iaIconoUrl            String?
+  fondoPlayerUrl        String?
+  streamUrl             String?
+  spotifyUrl            String?
+  mostrarSpotify        Boolean               @default(false)
+  mercadoPagoLink       String?
+  paypalLink            String?
+  whatsapp              String?
+  fontFamily            String                @default("inter")
+  plantilla             String                @default("clasico")
+  adHorizontal          String?
+  adSquare              String?
+  publicidadActiva      Boolean               @default(true)
+  adDisplayBajoPlayer   String                @default("slider")
+  tituloNoticias        String                @default("Titulares")
+  activa                Boolean               @default(true)
+  suspendida            Boolean               @default(false)
+  configSidebar         Json?                 @default("[]")
+  fechaCreacion         DateTime              @default(now())
+  planId                String?
+  planVenceEn           DateTime?
+  periodoFacturacion    String                @default("mensual")
+  almacenamientoExtraGB Int                   @default(0)
+  sonicpanelId          String?
+  streamUser            String?
+  streamPassword        String?
+  streamPort            Int?
+  streamMount           String?
+  ftpUser               String?
+  ftpPassword           String?
+  auspiciantes          Auspiciante[]
+  chatMensajes          ChatMensaje[]
+  encuestas             Encuesta[]
+  estadisticas          EstadisticaListener[]
+  medios                Media[]
+  noticias              Noticia[]
+  ordenes               Order[]
+  pagos                 Payment[]
+  podcasts              Podcast[]
+  programacion          Programacion[]
+  plan                  Plan?                 @relation(fields: [planId], references: [id])
+  tags                  Tag[]
+  tickets               Ticket[]
+  usuarios              Usuario[]
+
+  @@map("radios")
+}
+
+model Setting {
+  id    String @id @default(uuid())
+  clave String @unique
+  valor String
+
+  @@map("settings")
+}
+
+model Usuario {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String
+  nombre         String?
+  telefono       String?
+  rol            RolUsuario      @default(ADMIN_RADIO)
+  activo         Boolean         @default(true)
+  radioId        String?
+  fechaCreacion  DateTime        @default(now())
+  noticias       Noticia[]
+  ticketMensajes TicketMensaje[]
+  tickets        Ticket[]
+  radio          Radio?          @relation(fields: [radioId], references: [id])
+
+  @@map("usuarios")
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  radioId        String?
+  planId         String
+  total          Float
+  estado         EstadoOrder @default(PENDIENTE)
+  mpPreferenceId String?
+  datosPagador   Json?
+  fechaCreacion  DateTime    @default(now())
+  plan           Plan        @relation(fields: [planId], references: [id])
+  radio          Radio?      @relation(fields: [radioId], references: [id])
+  pagos          Payment[]
+
+  @@map("ordenes")
+}
+
+model Payment {
+  id            String     @id @default(uuid())
+  radioId       String?
+  orderId       String?
+  monto         Float
+  moneda        String     @default("ARS")
+  estado        EstadoPago @default(PENDIENTE)
+  mpPaymentId   String?
+  mpStatus      String?
+  metodo        String?
+  fechaPago     DateTime?
+  fechaCreacion DateTime   @default(now())
+  orden         Order?     @relation(fields: [orderId], references: [id])
+  radio         Radio?     @relation(fields: [radioId], references: [id])
+
+  @@map("pagos")
+}
+
+model Ticket {
+  id            String          @id @default(uuid())
+  radioId       String
+  usuarioId     String
+  asunto        String
+  estado        EstadoTicket    @default(ABIERTO)
+  fechaCreacion DateTime        @default(now())
+  mensajes      TicketMensaje[]
+  radio         Radio           @relation(fields: [radioId], references: [id])
+  usuario       Usuario         @relation(fields: [usuarioId], references: [id])
+
+  @@map("tickets")
+}
+
+model TicketMensaje {
+  id        String   @id @default(uuid())
+  ticketId  String
+  autorId   String
+  contenido String
+  esAdmin   Boolean  @default(false)
+  creadoEn  DateTime @default(now())
+  autor     Usuario  @relation(fields: [autorId], references: [id])
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  @@map("ticket_mensajes")
+}
+
+model Noticia {
+  id               String             @id @default(uuid())
+  radioId          String
+  titulo           String
+  slug             String
+  copete           String?
+  contenidoHtml    String
+  imagenDestacada  String?
+  estado           EstadoNoticia      @default(BORRADOR)
+  metaTitulo       String?
+  metaDescripcion  String?
+  ogImagen         String?
+  autorId          String
+  fechaPublicacion DateTime?
+  fechaProgramada  DateTime?
+  fechaCreacion    DateTime           @default(now())
+  sharesFacebook   Int                @default(0)
+  sharesWhatsapp   Int                @default(0)
+  sharesTwitter    Int                @default(0)
+  votosMeEncanto   Int                @default(0)
+  votosInteresante Int                @default(0)
+  votosRegular     Int                @default(0)
+  votosNoMeGusto   Int                @default(0)
+  encuestas        Encuesta[]
+  autor            Usuario            @relation(fields: [autorId], references: [id])
+  radio            Radio              @relation(fields: [radioId], references: [id])
+  categorias       CategoriaNoticia[] @relation("CategoriaNoticiaToNoticia")
+  tags             Tag[]              @relation("NoticiaToTag")
+
+  @@unique([radioId, slug])
+  @@map("noticias")
+}
+
+model CategoriaNoticia {
+  id       String    @id @default(uuid())
+  nombre   String
+  slug     String    @unique
+  parentId String?
+  noticias Noticia[] @relation("CategoriaNoticiaToNoticia")
+
+  @@map("categorias_noticias")
+}
+
+model Tag {
+  id       String    @id @default(uuid())
+  radioId  String
+  nombre   String
+  slug     String
+  radio    Radio     @relation(fields: [radioId], references: [id])
+  noticias Noticia[] @relation("NoticiaToTag")
+
+  @@unique([radioId, slug])
+  @@map("tags")
+}
+
+model Media {
+  id          String   @id @default(uuid())
+  radioId     String
+  url         String
+  nombre      String
+  tipo        String
+  mimetype    String?
+  tamanoBytes Int?
+  creadoEn    DateTime @default(now())
+  radio       Radio    @relation(fields: [radioId], references: [id])
+
+  @@map("media")
+}
+
+model Auspiciante {
+  id            String   @id @default(uuid())
+  radioId       String
+  nombreEmpresa String
+  emailContacto String?
+  radio         Radio    @relation(fields: [radioId], references: [id])
+  banners       Banner[]
+
+  @@map("auspiciantes")
+}
+
+model Banner {
+  id                String          @id @default(uuid())
+  auspicianteId     String
+  imagenUrl         String
+  urlDestino        String?
+  ubicacion         UbicacionBanner @default(SIDEBAR)
+  fechaInicio       DateTime
+  fechaFin          DateTime?
+  clics             Int             @default(0)
+  impresiones       Int             @default(0)
+  mostrarMobile     Boolean         @default(true)
+  mostrarEscritorio Boolean         @default(true)
+  auspiciante       Auspiciante     @relation(fields: [auspicianteId], references: [id])
+
+  @@map("banners")
+}
+
+model Programacion {
+  id             String  @id @default(uuid())
+  radioId        String
+  diaSemana      Int
+  horaInicio     String
+  horaFin        String
+  nombrePrograma String
+  conductores    String?
+  imagenPrograma String?
+  descripcion    String?
+  facebook       String?
+  instagram      String?
+  twitter        String?
+  whatsapp       String?
+  radio          Radio   @relation(fields: [radioId], references: [id])
+
+  @@map("programacion")
+}
+
+model Encuesta {
+  id                String           @id @default(uuid())
+  radioId           String
+  pregunta          String
+  activa            Boolean          @default(true)
+  estado            String           @default("PUBLISHED")
+  estilo            String           @default("premium")
+  mostrarResultados Boolean          @default(true)
+  fechaFin          DateTime?
+  creadaEn          DateTime         @default(now())
+  noticiaId         String?
+  noticia           Noticia?         @relation(fields: [noticiaId], references: [id])
+  radio             Radio            @relation(fields: [radioId], references: [id])
+  opciones          OpcionEncuesta[]
+
+  @@map("encuestas")
+}
+
+model OpcionEncuesta {
+  id         String   @id @default(uuid())
+  encuestaId String
+  texto      String
+  imagenUrl  String?
+  votos      Int      @default(0)
+  orden      Int      @default(0)
+  encuesta   Encuesta @relation(fields: [encuestaId], references: [id])
+
+  @@map("opciones_encuesta")
+}
+
+model ChatMensaje {
+  id            String        @id @default(uuid())
+  radioId       String
+  nombreEmisor  String
+  texto         String
+  leido         Boolean       @default(false)
+  esAdmin       Boolean       @default(false)
+  fechaCreacion DateTime      @default(now())
+  replyToId     String?
+  radio         Radio         @relation(fields: [radioId], references: [id])
+  replyTo       ChatMensaje?  @relation("RespuestaA", fields: [replyToId], references: [id])
+  respuestas    ChatMensaje[] @relation("RespuestaA")
+
+  @@map("chat_mensajes")
+}
+
+model EstadisticaListener {
+  id       String   @id @default(uuid())
+  radioId  String
+  fecha    DateTime @default(now())
+  cantidad Int      @default(0)
+  radio    Radio    @relation(fields: [radioId], references: [id], onDelete: Cascade)
+
+  @@index([radioId, fecha])
+  @@map("estadisticas_listeners")
+}
+
+model Podcast {
+  id          String            @id @default(uuid())
+  radioId     String
+  titulo      String
+  descripcion String?
+  portadaUrl  String?
+  creadoEn    DateTime          @default(now())
+  episodios   EpisodioPodcast[]
+  radio       Radio             @relation(fields: [radioId], references: [id], onDelete: Cascade)
+
+  @@map("podcasts")
+}
+
+model EpisodioPodcast {
+  id               String   @id @default(uuid())
+  podcastId        String
+  titulo           String
+  descripcion      String?
+  audioMp3Url      String?
+  audioLinkExt     String?
+  reproducciones   Int      @default(0)
+  fechaPublicacion DateTime @default(now())
+  podcast          Podcast  @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+
+  @@map("episodios_podcast")
+}
+
+model PushSubscription {
+  id       String   @id @default(uuid())
+  radioId  String
+  endpoint String   @unique
+  p256dh   String
+  auth     String
+  creadoEn DateTime @default(now())
+
+  @@index([radioId])
+  @@map("push_subscriptions")
+}
+
+model PushNotification {
+  id        String   @id @default(uuid())
+  radioId   String
+  titulo    String
+  cuerpo    String
+  url       String?
+  enviadoEn DateTime @default(now())
+  enviadas  Int      @default(0)
+
+  @@index([radioId])
+  @@map("push_notifications")
+}
+
+enum RolUsuario {
+  SUPER_ADMIN
+  ADMIN_RADIO
+  EDITOR_NOTICIAS
+  LOCUTOR
+}
+
+enum EstadoOrder {
+  PENDIENTE
+  PAGADA
+  CANCELADA
+  EXPIRADA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+  EN_PROCESO
+  DEVUELTO
+}
+
+enum EstadoTicket {
+  ABIERTO
+  EN_PROCESO
+  CERRADO
+}
+
+enum EstadoNoticia {
+  BORRADOR
+  PUBLICADA
+  PROGRAMADA
+}
+
+enum UbicacionBanner {
+  HEADER
+  FOOTER
+  SIDEBAR
+  IN_ARTICLE_TOP
+  IN_ARTICLE_MIDDLE
+  IN_ARTICLE_BOTTOM
+  UNDER_PLAYER
+}
