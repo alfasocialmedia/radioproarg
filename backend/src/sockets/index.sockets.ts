@@ -5,6 +5,7 @@ import { prisma } from '../config/prisma';
 const JWT_SECRET = (process.env.JWT_SECRET as string) || 'DEV_SECRET_CHANGE_ME';
 
 export const inicializarWebSockets = (io: Server) => {
+    // Middleware de autenticación para Sockets
     io.use((socket, next) => {
         const token = socket.handshake.auth.token;
         if (token) {
@@ -27,6 +28,7 @@ export const inicializarWebSockets = (io: Server) => {
         socket.on('enviar_mensaje_chat', async (data: { radioId: string; usuario: string; texto: string; esAdmin?: boolean; replyToId?: string }) => {
             try {
                 const user = socket.data.user;
+
                 let finalEsAdmin = false;
                 if (data.esAdmin) {
                     if (user && (user.rol === 'ADMIN_RADIO' || user.rol === 'SUPER_ADMIN')) {
@@ -36,7 +38,7 @@ export const inicializarWebSockets = (io: Server) => {
                             finalEsAdmin = true;
                         }
                     } else {
-                        finalEsAdmin = false;
+                        finalEsAdmin = false; 
                     }
                 }
 
@@ -81,18 +83,21 @@ export const inicializarWebSockets = (io: Server) => {
             try {
                 const user = socket.data.user;
                 if (!user || (user.rol !== 'ADMIN_RADIO' && user.rol !== 'SUPER_ADMIN')) {
-                    return;
+                    return; 
                 }
+
                 if (user.rol === 'ADMIN_RADIO' && user.radioId !== data.radioId) {
                     return; 
                 }
+
                 const msjActualizado = await prisma.chatMensaje.update({
                     where: { 
                         id: data.id,
-                        radioId: data.radioId
+                        radioId: data.radioId 
                     },
                     data: { texto: data.nuevoTexto }
                 });
+
                 io.to(data.radioId).emit('mensaje_chat_editado', {
                     id: msjActualizado.id,
                     nuevoTexto: msjActualizado.texto
@@ -100,6 +105,10 @@ export const inicializarWebSockets = (io: Server) => {
             } catch (error) {
                 console.error("Error editando mensaje de chat en socket:", error);
             }
+        });
+
+        socket.on('disconnect', () => {
+            // cleanup si fuera necesario
         });
     });
 };

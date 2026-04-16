@@ -32,7 +32,7 @@ La plataforma opera bajo el dominio onradio.com.ar y cada radio recibe un subdom
 ### Plan Portal — AR$ 20.000/mes
 - TODO lo del Plan Audio, más:
 - Portal web completo y personalizable con colores/logos propios
-- CMS de Noticias (crear, editar, publicar noticias con imágenes)
+- CMS de Noticias (crear, editar, publicar notas con imágenes)
 - Gestión de Podcasts (series, episodios, audio)
 - Programación de grilla horaria (artículos con horarios y días)
 - Sistema de Publicidad (banners, spots de audio, campañas)
@@ -151,6 +151,7 @@ Formato típico: https://stream.servidor.com:8000/live
 
 ## PORTAL PÚBLICO DE LA RADIO
 
+### Diseño y Funciones
 Cada radio con Plan Portal tiene un portal web en su subdominio (ej: miradio.onradio.com.ar):
 - Reproductor de audio en vivo siempre visible
 - Canción actual en reproducción (si el servidor lo soporta)
@@ -245,4 +246,4 @@ Cada radio con Plan Portal tiene un portal web en su subdominio (ej: miradio.onr
 **Idioma de la plataforma**: Español
 **Web principal**: onradio.com.ar
 **El sistema opera 24/7** con monitoreo automático del estado de los streams.
-`;
+\`;
